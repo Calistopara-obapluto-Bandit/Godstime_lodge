@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: gods-time-lodge
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_EMAIL
+        value: admin@godstimelodge.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
