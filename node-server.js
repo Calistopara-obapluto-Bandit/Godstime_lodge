@@ -44,7 +44,7 @@ function loadDb() {
   if (!fs.existsSync(DB_PATH)) {
     const admin = createUser({
       email: "admin@godstimelodge.com",
-      password: "admin123",
+      password: "Sbiam@Anyilinklodge",
       role: "admin",
       fullName: "Admin",
       unit: "",
