@@ -18,10 +18,10 @@ Local run (PHP built-in server)
 -------------------------------
 From the project folder, run:
 
-  php -S localhost:8000 -t public
+  php -S localhost:1000 -t public
 
 Then open:
-  http://localhost:8000/register
+  http://localhost:1000/register
 
 Admin user
 ----------
