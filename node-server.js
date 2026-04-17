@@ -4,8 +4,14 @@ const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
 
-const PORT = 1000;
-const DATA_DIR = path.join(__dirname, "data");
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(__dirname, "data");
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || "admin@godstimelodge.com").trim().toLowerCase();
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || "admin123");
+const COOKIE_SECURE = String(process.env.COOKIE_SECURE || "").toLowerCase() === "true";
 const DB_PATH = path.join(DATA_DIR, "node-db.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const ASSETS_DIR = path.join(PUBLIC_DIR, "assets");
@@ -43,8 +49,8 @@ function loadDb() {
   ensureDataDir();
   if (!fs.existsSync(DB_PATH)) {
     const admin = createUser({
-      email: "admin@godstimelodge.com",
-      password: "Sbiam@Anyilinklodge",
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
       role: "admin",
       fullName: "Admin",
       unit: "",
@@ -60,7 +66,7 @@ function saveDb(db) {
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf8");
 }
 
-const sessions = new Map(); // sessionId -> userId
+const sessions = new Map();
 
 function parseCookies(req) {
   const header = req.headers.cookie || "";
@@ -88,6 +94,13 @@ function getCurrentUser(req) {
 function redirect(res, to) {
   res.writeHead(302, { Location: to });
   res.end();
+}
+
+function buildSessionCookie(sid, maxAge = null) {
+  const parts = [`gtl_session=${encodeURIComponent(sid)}`, "HttpOnly", "Path=/", "SameSite=Lax"];
+  if (COOKIE_SECURE) parts.push("Secure");
+  if (maxAge !== null) parts.push(`Max-Age=${maxAge}`);
+  return parts.join("; ");
 }
 
 function send(res, status, body, headers = {}) {
@@ -284,53 +297,6 @@ function tenantDashboardView(user) {
   );
 }
 
-function rewriteAdminTemplateHtml(html, activeKey) {
-  // Point assets to backend-served static files.
-  html = html.replaceAll('href="sbiam-style.css"', 'href="/assets/sbiam-style.css"');
-  html = html.replaceAll('src="sbiam-script.js"', 'src="/assets/sbiam-script.js"');
-  html = html.replaceAll('href="login.html"', 'href="/logout"');
-
-  // Route links through backend.
-  html = html.replaceAll('href="index.html"', 'href="/admin/dashboard"');
-  html = html.replaceAll('href="projects.html"', 'href="/admin/projects"');
-  html = html.replaceAll('href="inbox.html"', 'href="/admin/inbox"');
-  html = html.replaceAll('href="analytics.html"', 'href="/admin/payments"');
-  html = html.replaceAll('href="settings.html"', 'href="/admin/settings"');
-
-  // Mark the correct nav item active (best-effort).
-  html = html.replaceAll('href="/admin/dashboard" class="nav-link active"', 'href="/admin/dashboard" class="nav-link"');
-  html = html.replaceAll('href="/admin/projects" class="nav-link active"', 'href="/admin/projects" class="nav-link"');
-  html = html.replaceAll('href="/admin/inbox" class="nav-link active"', 'href="/admin/inbox" class="nav-link"');
-  html = html.replaceAll('href="/admin/payments" class="nav-link active"', 'href="/admin/payments" class="nav-link"');
-  html = html.replaceAll('href="/admin/settings" class="nav-link active"', 'href="/admin/settings" class="nav-link"');
-
-  const activeMap = {
-    dashboard: 'href="/admin/dashboard" class="nav-link"',
-    projects: 'href="/admin/projects" class="nav-link"',
-    inbox: 'href="/admin/inbox" class="nav-link"',
-    payments: 'href="/admin/payments" class="nav-link"',
-    settings: 'href="/admin/settings" class="nav-link"',
-  };
-  const needle = activeMap[activeKey];
-  if (needle) {
-    html = html.replaceAll(needle, needle.replace('class="nav-link"', 'class="nav-link active"'));
-  }
-
-  return html;
-}
-
-function serveAdminTemplate(res, fileName, activeKey) {
-  const filePath = path.join(__dirname, "templatemo_608_daynight_admin", fileName);
-  if (!fs.existsSync(filePath)) {
-    sendText(res, 500, "Admin page missing.");
-    return;
-  }
-  const html = fs.readFileSync(filePath, "utf8");
-  const out = rewriteAdminTemplateHtml(html, activeKey);
-  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-  res.end(out);
-}
-
 function requireLogin(req, res) {
   const user = getCurrentUser(req);
   if (!user) {
@@ -377,6 +343,11 @@ const server = http.createServer(async (req, res) => {
 
   if (serveStatic(res, pathname)) return;
 
+  if (pathname === "/healthz") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    return res.end(JSON.stringify({ ok: true }));
+  }
+
   if (pathname === "/") {
     const user = getCurrentUser(req);
     if (user) {
@@ -401,7 +372,7 @@ const server = http.createServer(async (req, res) => {
 
     const sid = randomId(18);
     sessions.set(sid, user.id);
-    res.setHeader("Set-Cookie", `gtl_session=${encodeURIComponent(sid)}; HttpOnly; Path=/; SameSite=Lax`);
+    res.setHeader("Set-Cookie", buildSessionCookie(sid));
     return redirect(res, "/");
   }
 
@@ -424,7 +395,7 @@ const server = http.createServer(async (req, res) => {
 
     const sid = randomId(18);
     sessions.set(sid, tenant.id);
-    res.setHeader("Set-Cookie", `gtl_session=${encodeURIComponent(sid)}; HttpOnly; Path=/; SameSite=Lax`);
+    res.setHeader("Set-Cookie", buildSessionCookie(sid));
     return redirect(res, "/tenant/dashboard");
   }
 
@@ -432,7 +403,7 @@ const server = http.createServer(async (req, res) => {
     const cookies = parseCookies(req);
     const sid = cookies.gtl_session;
     if (sid) sessions.delete(sid);
-    res.setHeader("Set-Cookie", "gtl_session=; Path=/; Max-Age=0; SameSite=Lax");
+    res.setHeader("Set-Cookie", buildSessionCookie("", 0));
     return redirect(res, "/login");
   }
 
@@ -447,45 +418,19 @@ const server = http.createServer(async (req, res) => {
     if (!user) return;
     const adminFile = path.join(PUBLIC_DIR, "admin-dashboard.html");
     if (fs.existsSync(adminFile)) {
-      const html = fs.readFileSync(adminFile, "utf8");
-      const out = rewriteAdminTemplateHtml(html, "dashboard");
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      return res.end(out);
+      return fs.createReadStream(adminFile).pipe(res);
     }
     return sendText(res, 500, "Admin dashboard not found.");
-  }
-
-  if (pathname === "/admin/projects") {
-    const user = requireRole(req, res, "admin");
-    if (!user) return;
-    return serveAdminTemplate(res, "projects.html", "projects");
-  }
-
-  if (pathname === "/admin/inbox") {
-    const user = requireRole(req, res, "admin");
-    if (!user) return;
-    return serveAdminTemplate(res, "inbox.html", "inbox");
-  }
-
-  if (pathname === "/admin/payments") {
-    const user = requireRole(req, res, "admin");
-    if (!user) return;
-    // We repurposed analytics.html as the payments page earlier.
-    return serveAdminTemplate(res, "analytics.html", "payments");
-  }
-
-  if (pathname === "/admin/settings") {
-    const user = requireRole(req, res, "admin");
-    if (!user) return;
-    return serveAdminTemplate(res, "settings.html", "settings");
   }
 
   sendText(res, 404, "Not found");
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`Server running at http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Server running at http://${HOST}:${PORT}`);
   console.log("Tenant register: /register");
   console.log("Tenant dashboard: /tenant/dashboard");
-  console.log("Admin login: admin@godstimelodge.com / admin123");
+  console.log("Admin tenants: /admin/tenants");
+  console.log(`Admin login: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
 });
