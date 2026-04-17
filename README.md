@@ -15,11 +15,39 @@ Key routes
   /tenant/dashboard   (tenant-only)
   /admin/dashboard    (admin-only)
 
-Local run (PHP built-in server)
+Local run ( pacakage.json built-in server)
 -------------------------------
 From the project folder, run:
 
-  php -S localhost:1000 -t public
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+  node ---run localhost:1000 -t public
 
 Then open:
   http://localhost:1000/register
@@ -28,9 +56,5 @@ Admin user
 ----------
 Create the first admin user by running:
 
-  php app/seed_admin.php
-
-Default credentials:
-  admin@godstimelodge.com / admin123
-
-Change the password after setup.
+  php app/seed_admin.phpBackend# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
