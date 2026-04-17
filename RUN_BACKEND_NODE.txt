@@ -14,5 +14,5 @@ Routes:
   /admin/dashboard
 
 Default admin (auto-created in data/node-db.json):
-  admin@godstimelodge.com / admin123
+  admin@godstimelodge.com / Sbiam@Anyilinklodge
 
