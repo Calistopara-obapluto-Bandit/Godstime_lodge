@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - God's Time Lodge</title>
+    <script>
+        if (localStorage.getItem('gods-time-logde-theme') === 'carbon') {
+            document.documentElement.classList.add('carbon');
+        }
+    </script>
+    <link rel="stylesheet" href="/assets/sbiam-style.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="/admin/dashboard" class="logo">
+                        <div class="logo-icon logo-mark">GT</div><div class="logo-text"><div class="logo-name">God's Time Lodge</div><div class="logo-sub">Tenant Billing</div></div>
+                    </a>
+                </div>
+                <div class="nav-right">
+                    <div class="theme-toggle">
+                        <button class="theme-btn theme-btn-snow active" onclick="setTheme('snow')" title="Snow Edition"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+                        <button class="theme-btn theme-btn-carbon" onclick="setTheme('carbon')" title="Carbon Edition"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+                    </div>
+                    <button class="user-menu">
+                        <div class="user-avatar">A</div>
+                        <span class="user-name">Admin</span>
+                    </button>
+                    <a href="/logout" class="btn-logout" title="Logout">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="greeting">Good morning, Admin</h1>
+                <p class="greeting-sub">Here is a quick snapshot of tenant payments and occupancy.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">Total Due</div><div class="stat-value">₦2,450,000</div><div class="stat-change positive">+₦180,000 new charges</div></div>
+                <div class="stat-card"><div class="stat-label">Collected This Month</div><div class="stat-value">₦1,980,000</div><div class="stat-change positive">+15 payments received</div></div>
+                <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value">₦270,000</div><div class="stat-change negative">3 tenants past due</div></div>
+                <div class="stat-card"><div class="stat-label">Occupancy</div><div class="stat-value">92%</div><div class="stat-change positive">23 of 25 units occupied</div></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Admin Dashboard</h3>
+                        <p class="card-subtitle">Render-ready admin landing page.</p>
+                    </div>
+                </div>
+                <div style="padding: 1rem; color: var(--text-secondary);">
+                    This dashboard is now being served from the public folder so Render can load it without missing file errors.
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer"><p>&copy; 2026 Sbiam Solutions. All rights reserved.</p></footer>
+    </div>
+    <script src="/assets/sbiam-script.js"></script>
+</body>
+</html>
