@@ -1,23 +1,5 @@
-
-Backend Setup (God's Time Lodge)
-===============================
-
-This folder now contains a small PHP + SQLite backend so tenants can register/login
-and access only their own dashboard at:
-
-  /tenant/dashboard
-
-Key routes
-----------
-  /login
-  /register
-  /logout
-  /tenant/dashboard   (tenant-only)
-  /admin/dashboard    (admin-only)
-
-Local run ( pacakage.json built-in server)
--------------------------------
-From the project folder, run:
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
 name: Node.js CI
 
@@ -47,14 +29,3 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
-  node ---run localhost:1000 -t public
-
-Then open:
-  http://localhost:1000/register
-
-Admin user
-----------
-Create the first admin user by running:
-
-  php app/seed_admin.phpBackend# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
