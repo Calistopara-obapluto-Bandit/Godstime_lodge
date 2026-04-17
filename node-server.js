@@ -4,7 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { URL } = require("url");
 
-const PORT = 3000;
+const PORT = 1000;
 const DATA_DIR = path.join(__dirname, "data");
 const DB_PATH = path.join(DATA_DIR, "node-db.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
